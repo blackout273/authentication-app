@@ -27,5 +27,8 @@ class appMiddleware(BaseHTTPMiddleware):
             return response 
         
     async def verifyJwt(self,value):
-        jwt_decoded = jwt.decode(jwt=value, key=config.get('SECRET_JWT'), algorithms=['RS256'])
-        print(jwt_decoded)
+        try:
+            jwt_decoded = jwt.decode(jwt=value, key=config.get('SECRET_JWT'),options={"verify_exp": True}, algorithms=['RS256'])
+            print(jwt_decoded)
+        except Exception as ex:
+            raise HTTPException(status_code=401, detail="InvalidSignatureError")
