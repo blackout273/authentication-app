@@ -10,6 +10,10 @@ class appMiddleware(BaseHTTPMiddleware):
         headers = request.headers.get('authorization', None)
         has_error=""
         try:
+            if(request.url.path == "/docs" or request.url.path =="/openapi.json"):
+                response = await call_next(request)
+                return response 
+                
             if not headers:
                 raise HTTPException(status_code=401, detail="AUTHENTICATION ERROR")
             if "Bearer" not in headers:
