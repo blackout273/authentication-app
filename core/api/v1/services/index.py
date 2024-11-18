@@ -12,19 +12,20 @@ class AuthPermissions:
     def __init__(self, perms: List[str]):
         self.perms = perms
 
-    def __call__(self, req: Request):
+    async def __call__(self, req: Request):
         self.req = req
+        print("OTHERSIDE",self.req.state.permissions)
         headers: str = req.headers.get("authorization", None)
         authorization: str = headers.replace("Bearer ", "")
-        result: JwtToken = self.verifyJwt(authorization)
+        result: JwtToken = await self.verifyJwt(authorization)
 
         if not result:
             raise HTTPException(status_code=401, detail="AUTHENTICATION ERROR")
 
-        for permission in json.loads(result["permissions"]):
+        for permission in self.req.state.permissions: #json.loads(result.get("permissions","[]")):
             if permission in self.perms:
                 return True
         raise HTTPException(status_code=401, detail="VOCE NÃO POSSUI PERMISSÃO PARA ACESSAR O RECURSO")
 
-    def verifyJwt(self, value):
+    async def verifyJwt(self, value):
         return jwt.decode(jwt=value, key=config.get("SECRET_JWT"), algorithms=["RS256"])
